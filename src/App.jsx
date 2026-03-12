@@ -35,12 +35,20 @@ function NavBar() {
 function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const loadData = async () => {
     setLoading(true);
-    const db = await fetchStats();
-    setData(db);
-    setLoading(false);
+    setError(null);
+    try {
+      const db = await fetchStats();
+      setData(db);
+    } catch (err) {
+      setError(err.message || 'Failed to fetch data. Please check your connection.');
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -54,6 +62,19 @@ function App() {
         {loading ? (
           <div className="flex h-64 items-center justify-center text-text-muted">
             Loading timing records...
+          </div>
+        ) : error ? (
+          <div className="flex h-64 items-center justify-center">
+            <div className="text-center">
+              <div className="text-red-400 font-bold mb-2">Failed to load data</div>
+              <div className="text-text-muted text-sm">{error}</div>
+              <button 
+                onClick={loadData}
+                className="mt-4 px-4 py-2 bg-brand-red hover:bg-brand-red-dark text-white rounded-lg text-sm font-bold"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         ) : (
           <Routes>

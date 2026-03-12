@@ -6,22 +6,12 @@ const DATA_PATH = 'public/data.json';
  */
 export async function fetchStats() {
   try {
-    const res = await fetch('/data.json', { cache: 'no-store' });
+    const res = await fetch(`${import.meta.env.BASE_URL}data.json`, { cache: 'no-store' });
     if (!res.ok) throw new Error('Network response was not ok');
     return await res.json();
   } catch (err) {
     console.error("Could not fetch data:", err);
-    return {
-      config: {
-        club: "Pacers Run Club",
-        season: "Season 2",
-        distance: "5K",
-        githubOwner: "your-username",
-        githubRepo: "timetrialswebsite"
-      },
-      editions: [],
-      entries: []
-    };
+    throw err; // Throw error instead of returning placeholder
   }
 }
 
@@ -36,7 +26,7 @@ export async function updateStats(pat, newData) {
   }
 
   const url = `https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${DATA_PATH}`;
-  
+
   // 1. Get the current file's SHA (required for updating)
   let sha;
   try {
@@ -59,7 +49,7 @@ export async function updateStats(pat, newData) {
       const fileData = await res.json();
       sha = fileData.sha;
     }
-  } catch(e) {
+  } catch (e) {
     console.error('Failed fetching file sha:', e);
     throw e;
   }
