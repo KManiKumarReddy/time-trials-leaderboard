@@ -1,0 +1,11 @@
+{
+  "config": {
+    "club": "Pacers Run Club",
+    "season": "Season 2",
+    "distance": "5K",
+    "githubOwner": "your-github-username",
+    "githubRepo": "timetrialswebsite"
+  },
+  "editions": [],
+  "entries": []
+}

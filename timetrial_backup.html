@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Time Trials — Season 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;0,900;1,700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     CONFIG — edit these values to customise
+     ============================================================ */
+  :root {
+    --admin-password: "pacers2025"; /* ← CHANGE THIS */
+    --club-name: "Pacers Run Club";  /* ← CHANGE THIS */
+    --season: "Season 2";
+    --edition: "10";
+    --distance: "5K";
+  }
+
+  /* ============================================================
+     DESIGN TOKENS
+     ============================================================ */
+  :root {
+    --ink:    #0d0d0d;
+    --paper:  #f2efe8;
+    --cream:  #e8e3d8;
+    --red:    #d63a2a;
+    --red2:   #a52a1c;
+    --gold:   #c8962e;
+    --mid:    #6b6560;
+    --border: #cdc8be;
+    --ff-head: 'Barlow Condensed', sans-serif;
+    --ff-body: 'Barlow', sans-serif;
+  }
+
+  /* ============================================================
+     RESET & BASE
+     ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; scroll-behavior: smooth; }
+  body {
+    font-family: var(--ff-body);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  button { cursor: pointer; border: none; background: none; font: inherit; }
+  input, select { font: inherit; }
+
+  /* ============================================================
+     HEADER
+     ============================================================ */
+  .site-header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid var(--red);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+  .logo {
+    font-family: var(--ff-head);
+    font-weight: 900;
+    font-size: 1.3rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--paper);
+    text-decoration: none;
+  }
+  .logo span { color: var(--red); }
+  .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+  .nav-links a {
+    font-family: var(--ff-head);
+    font-weight: 600;
+    font-size: .95rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--border);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--paper); }
+  .admin-btn {
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: .85rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--red);
+    padding: .35rem .9rem;
+    border-radius: 2px;
+    transition: background .2s;
+    text-decoration: none;
+  }
+  .admin-btn:hover { background: var(--red2); color: var(--paper); }
+
+  /* ============================================================
+     HERO BANNER
+     ============================================================ */
+  .hero {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 3.5rem 2rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 120px,
+      rgba(255,255,255,.018) 120px,
+      rgba(255,255,255,.018) 121px
+    );
+  }
+  .hero-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .hero-eyebrow {
+    font-family: var(--ff-head);
+    font-weight: 600;
+    font-size: .8rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: .7rem;
+  }
+  .hero-title {
+    font-family: var(--ff-head);
+    font-weight: 900;
+    font-style: italic;
+    font-size: clamp(3.5rem, 9vw, 7rem);
+    line-height: .92;
+    text-transform: uppercase;
+    letter-spacing: -.01em;
+  }
+  .hero-title .outline {
+    -webkit-text-stroke: 2px var(--paper);
+    color: transparent;
+  }
+  .hero-title .red { color: var(--red); }
+  .hero-meta {
+    margin-top: 1.8rem;
+    display: flex;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .hero-stat { }
+  .hero-stat-val {
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  .hero-stat-label {
+    font-size: .75rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-top: .15rem;
+  }
+  .hero-divider { width: 1px; background: rgba(255,255,255,.15); }
+
+  /* ============================================================
+     MAIN LAYOUT
+     ============================================================ */
+  main { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+
+  /* ============================================================
+     EDITION TABS
+     ============================================================ */
+  .tabs-bar {
+    display: flex;
+    gap: .3rem;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0;
+  }
+  .tab-btn {
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: .85rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .5rem 1rem;
+    color: var(--mid);
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: color .15s, border-color .15s;
+    border-radius: 0;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--red); border-bottom-color: var(--red); }
+
+  /* ============================================================
+     LEADERBOARD TABLE
+     ============================================================ */
+  .section-label {
+    font-family: var(--ff-head);
+    font-weight: 600;
+    font-size: .72rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--mid);
+    margin-bottom: 1rem;
+  }
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .95rem;
+  }
+  thead tr {
+    border-bottom: 2px solid var(--ink);
+  }
+  th {
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--mid);
+    padding: .6rem .7rem;
+    text-align: left;
+  }
+  th.num { text-align: right; }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .12s;
+  }
+  tbody tr:hover { background: var(--cream); }
+  td {
+    padding: .75rem .7rem;
+    vertical-align: middle;
+  }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .rank-cell {
+    font-family: var(--ff-head);
+    font-weight: 900;
+    font-size: 1.3rem;
+    color: var(--border);
+    width: 3rem;
+    text-align: right;
+    padding-right: 1rem;
+  }
+  .rank-cell.top1 { color: var(--gold); }
+  .rank-cell.top2 { color: #8a9bb2; }
+  .rank-cell.top3 { color: #a07850; }
+
+  .runner-name {
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: .01em;
+  }
+  .runner-sub { font-size: .75rem; color: var(--mid); margin-top: .1rem; }
+
+  .time-chip {
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: .02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .pb-badge {
+    display: inline-block;
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: .62rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    background: var(--red);
+    color: #fff;
+    padding: .1rem .35rem;
+    border-radius: 2px;
+    margin-left: .4rem;
+    vertical-align: middle;
+  }
+  .dnf { color: var(--mid); font-style: italic; font-size: .85rem; }
+
+  .trend-up   { color: #2a8a4a; font-size: .8rem; }
+  .trend-down { color: var(--red); font-size: .8rem; }
+  .trend-same { color: var(--mid); font-size: .8rem; }
+
+  /* ============================================================
+     OVERALL STANDINGS (season view)
+     ============================================================ */
+  .season-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 3rem;
+  }
+  .runner-card {
+    background: var(--paper);
+    padding: 1.2rem 1.4rem;
+    transition: background .15s;
+  }
+  .runner-card:hover { background: var(--cream); }
+  .card-rank {
+    font-family: var(--ff-head);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 3.5rem;
+    line-height: 1;
+    color: var(--cream);
+  }
+  .runner-card.top1 .card-rank { color: rgba(200,150,46,.25); }
+  .card-name {
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin-top: -.5rem;
+  }
+  .card-best {
+    font-family: var(--ff-head);
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: var(--red);
+    margin-top: .3rem;
+  }
+  .card-meta { font-size: .75rem; color: var(--mid); margin-top: .2rem; }
+  .card-dots {
+    display: flex;
+    gap: 4px;
+    margin-top: .6rem;
+    flex-wrap: wrap;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .dot.ran { background: var(--red); }
+  .dot.pb  { background: var(--gold); }
+
+  /* ============================================================
+     EMPTY STATE
+     ============================================================ */
+  .empty {
+    text-align: center;
+    padding: 5rem 2rem;
+    color: var(--mid);
+  }
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .4; }
+  .empty p { font-size: .9rem; line-height: 1.6; }
+
+  /* ============================================================
+     ADMIN GATE
+     ============================================================ */
+  .page { display: none; }
+  .page.visible { display: block; }
+
+  .gate-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,13,13,.92);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  .gate-overlay.hidden { display: none; }
+  .gate-box {
+    background: var(--paper);
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 380px;
+    border-top: 4px solid var(--red);
+  }
+  .gate-box h2 {
+    font-family: var(--ff-head);
+    font-weight: 900;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    margin-bottom: .3rem;
+  }
+  .gate-box p { font-size: .85rem; color: var(--mid); margin-bottom: 1.5rem; }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    margin-bottom: 1rem;
+  }
+  .field label {
+    font-family: var(--ff-head);
+    font-weight: 600;
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+  .field input, .field select {
+    border: 1.5px solid var(--border);
+    padding: .55rem .7rem;
+    border-radius: 2px;
+    background: #fff;
+    outline: none;
+    transition: border-color .15s;
+    width: 100%;
+  }
+  .field input:focus, .field select:focus { border-color: var(--ink); }
+  .btn-primary {
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: .95rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    background: var(--red);
+    color: #fff;
+    padding: .65rem 1.5rem;
+    border-radius: 2px;
+    width: 100%;
+    transition: background .2s;
+    margin-top: .5rem;
+  }
+  .btn-primary:hover { background: var(--red2); }
+  .btn-secondary {
+    font-family: var(--ff-head);
+    font-weight: 600;
+    font-size: .85rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--border);
+    color: var(--ink);
+    padding: .5rem 1rem;
+    border-radius: 2px;
+    transition: border-color .15s, background .15s;
+  }
+  .btn-secondary:hover { border-color: var(--ink); background: var(--cream); }
+  .btn-danger {
+    font-family: var(--ff-head);
+    font-weight: 600;
+    font-size: .75rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: .3rem .6rem;
+    border-radius: 2px;
+    transition: background .15s;
+  }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+  .error-msg {
+    color: var(--red);
+    font-size: .8rem;
+    margin-top: .5rem;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+
+  /* ============================================================
+     ADMIN PANEL
+     ============================================================ */
+  .admin-header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    border-bottom: 3px solid var(--red);
+    margin-bottom: 2rem;
+  }
+  .admin-header h2 {
+    font-family: var(--ff-head);
+    font-weight: 900;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    flex: 1;
+  }
+  .admin-body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem 5rem;
+  }
+  .panel-section {
+    border: 1.5px solid var(--border);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 3px;
+    background: #fff;
+  }
+  .panel-section h3 {
+    font-family: var(--ff-head);
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 1rem;
+    padding-bottom: .5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-row {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: .75rem;
+  }
+  .form-row .field { flex: 1; min-width: 140px; margin-bottom: 0; }
+  .entry-row {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    padding: .6rem 0;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .entry-row:last-child { border-bottom: none; }
+  .entry-row .runner-name { flex: 1; min-width: 150px; }
+  .entry-row .time-chip { min-width: 80px; }
+  .tag-dns {
+    font-family: var(--ff-head);
+    font-size: .7rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    background: var(--cream);
+    padding: .15rem .4rem;
+    border-radius: 2px;
+    color: var(--mid);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: .8rem 1.5rem;
+    border-radius: 3px;
+    font-family: var(--ff-head);
+    font-weight: 600;
+    font-size: .85rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    z-index: 500;
+    transition: transform .3s cubic-bezier(.22,1,.36,1);
+    border-left: 3px solid var(--red);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 600px) {
+    .hero { padding: 2.5rem 1.2rem 2rem; }
+    main { padding: 1.5rem 1rem 4rem; }
+    .admin-body { padding: 0 1rem 4rem; }
+    .hero-meta { gap: 1.5rem; }
+    .form-row { flex-direction: column; }
+    th, td { padding: .5rem .4rem; }
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp .4s ease both; }
+  .fade-up:nth-child(2)  { animation-delay: .06s; }
+  .fade-up:nth-child(3)  { animation-delay: .12s; }
+  .fade-up:nth-child(4)  { animation-delay: .18s; }
+  .fade-up:nth-child(5)  { animation-delay: .24s; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     CONFIG — Edit these constants at the top of the <script>
+     ============================================================ -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ADMIN GATE OVERLAY -->
+<div class="gate-overlay hidden" id="adminGate">
+  <div class="gate-box">
+    <h2>Admin Console</h2>
+    <p>Enter the password to access the timing dashboard.</p>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="gateInput" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div class="error-msg" id="gateError">Incorrect password. Try again.</div>
+    <button class="btn-primary" onclick="checkPassword()">Enter →</button>
+    <button onclick="hideGate()" style="display:block;margin-top:.75rem;font-size:.8rem;color:var(--mid);width:100%;text-align:center;">Cancel</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     PUBLIC PAGE
+     ============================================================ -->
+<div class="page visible" id="publicPage">
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="#" class="logo" onclick="showPublic()"><span id="clubNameLogo">Run Club</span> / Time Trials</a>
+      <nav class="nav-links">
+        <a href="#" id="tabOverall" onclick="showOverall(event)" class="active">Overall</a>
+        <a href="#" id="tabEditions" onclick="showEditions(event)">Editions</a>
+        <a href="#" class="admin-btn" onclick="showGate()">Admin ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-eyebrow" id="heroEyebrow">Season 2 · 5K Time Trial</div>
+      <h1 class="hero-title">
+        <span class="outline" id="heroClubName">PACERS</span><br>
+        <span class="red">TIME</span> TRIALS
+      </h1>
+      <div class="hero-meta">
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="statEdition">—</div>
+          <div class="hero-stat-label">Current Edition</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="statRunners">—</div>
+          <div class="hero-stat-label">Total Runners</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="statCourseRecord">—</div>
+          <div class="hero-stat-label">Course Record</div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-val" id="statHolder">—</div>
+          <div class="hero-stat-label">Record Holder</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main content -->
+  <main>
+    <!-- OVERALL VIEW -->
+    <div id="overallView">
+      <div class="section-label">Season Standings — Best Time</div>
+      <div class="season-grid" id="seasonGrid"></div>
+    </div>
+
+    <!-- EDITIONS VIEW -->
+    <div id="editionsView" style="display:none;">
+      <div class="tabs-bar" id="editionTabs"></div>
+      <div class="section-label" id="editionLabel"></div>
+      <div class="table-wrap">
+        <table id="editionTable">
+          <thead>
+            <tr>
+              <th class="num">#</th>
+              <th>Runner</th>
+              <th class="num">Time</th>
+              <th class="num">vs PB</th>
+            </tr>
+          </thead>
+          <tbody id="editionTableBody"></tbody>
+        </table>
+      </div>
+      <div class="empty hidden" id="editionEmpty">
+        <div class="empty-icon">⏱</div>
+        <p>No results recorded for this edition yet.<br>Check back after the race!</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     ADMIN PAGE
+     ============================================================ -->
+<div class="page" id="adminPage">
+
+  <div class="admin-header">
+    <h2>⚡ Admin Console</h2>
+    <button class="btn-secondary" onclick="showPublic()" style="color:var(--paper);border-color:rgba(255,255,255,.3);">← Back to Public</button>
+    <button class="btn-danger" onclick="logout()" style="color:var(--red);border-color:var(--red);">Logout</button>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- Global config -->
+    <div class="panel-section">
+      <h3>🏁 Club & Season Settings</h3>
+      <div class="form-row">
+        <div class="field"><label>Club Name</label><input id="cfgClub" type="text" placeholder="Pacers Run Club"></div>
+        <div class="field"><label>Season</label><input id="cfgSeason" type="text" placeholder="Season 2"></div>
+        <div class="field"><label>Distance</label><input id="cfgDistance" type="text" placeholder="5K"></div>
+      </div>
+      <button class="btn-primary" style="width:auto;" onclick="saveConfig()">Save Settings</button>
+    </div>
+
+    <!-- Add Edition -->
+    <div class="panel-section">
+      <h3>📅 Add New Edition</h3>
+      <div class="form-row">
+        <div class="field"><label>Edition #</label><input id="newEdNum" type="number" placeholder="11" min="1"></div>
+        <div class="field"><label>Date</label><input id="newEdDate" type="date"></div>
+        <div class="field"><label>Location / Route (optional)</label><input id="newEdLocation" type="text" placeholder="Cubbon Park Loop"></div>
+      </div>
+      <button class="btn-primary" style="width:auto;" onclick="addEdition()">+ Add Edition</button>
+    </div>
+
+    <!-- Add Entry -->
+    <div class="panel-section">
+      <h3>➕ Log a Time</h3>
+      <div class="form-row">
+        <div class="field"><label>Edition</label>
+          <select id="entryEdition"><option value="">Select edition…</option></select>
+        </div>
+        <div class="field"><label>Runner Name</label><input id="entryName" type="text" placeholder="Full Name"></div>
+        <div class="field"><label>Time (mm:ss)</label><input id="entryTime" type="text" placeholder="24:32" pattern="\d{1,2}:\d{2}"></div>
+        <div class="field"><label>Status</label>
+          <select id="entryStatus">
+            <option value="ok">Finished</option>
+            <option value="dnf">DNF</option>
+            <option value="dns">DNS</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" style="width:auto;" onclick="addEntry()">Log Time</button>
+    </div>
+
+    <!-- Manage Editions -->
+    <div class="panel-section">
+      <h3>📋 All Entries</h3>
+      <div class="form-row" style="margin-bottom:1rem;">
+        <div class="field" style="max-width:220px;"><label>Filter by Edition</label>
+          <select id="filterEdition" onchange="renderAdminEntries()"><option value="">All editions</option></select>
+        </div>
+      </div>
+      <div id="adminEntries"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================
+     SCRIPT
+     ============================================================ -->
+<script>
+// =====================================================
+// ⬇️  CONFIG — Change these two constants
+// =====================================================
+const ADMIN_PASSWORD = "pacers2025"; // ← CHANGE THIS
+const STORAGE_KEY    = "timetrial_v2";
+// =====================================================
+
+/* ---- DATA SHAPE ----
+{
+  config: { club, season, distance },
+  editions: [ { id, num, date, location } ],
+  entries:  [ { id, editionId, name, time, status } ]
+                                 status: "ok"|"dnf"|"dns"
+}
+*/
+
+let DB = load();
+
+// ---- PERSIST ----
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {
+    config: { club: "Pacers Run Club", season: "Season 2", distance: "5K" },
+    editions: [],
+    entries: []
+  };
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+}
+
+// ---- AUTH ----
+let authed = false;
+function showGate() {
+  document.getElementById('gateInput').value = '';
+  document.getElementById('gateError').classList.remove('show');
+  document.getElementById('adminGate').classList.remove('hidden');
+  setTimeout(() => document.getElementById('gateInput').focus(), 100);
+}
+function hideGate() { document.getElementById('adminGate').classList.add('hidden'); }
+function checkPassword() {
+  const val = document.getElementById('gateInput').value;
+  if (val === ADMIN_PASSWORD) {
+    authed = true;
+    hideGate();
+    showAdmin();
+  } else {
+    document.getElementById('gateError').classList.add('show');
+    document.getElementById('gateInput').value = '';
+    document.getElementById('gateInput').focus();
+  }
+}
+document.getElementById('gateInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+function logout() { authed = false; showPublic(); }
+
+// ---- PAGE SWITCHING ----
+function showPublic() {
+  document.getElementById('publicPage').classList.add('visible');
+  document.getElementById('adminPage').classList.remove('visible');
+  renderPublic();
+}
+function showAdmin() {
+  document.getElementById('publicPage').classList.remove('visible');
+  document.getElementById('adminPage').classList.add('visible');
+  renderAdmin();
+}
+
+// ---- TABS ----
+let currentView = 'overall';
+let currentEditionId = null;
+
+function showOverall(e) {
+  if (e) e.preventDefault();
+  currentView = 'overall';
+  document.getElementById('overallView').style.display = '';
+  document.getElementById('editionsView').style.display = 'none';
+  document.getElementById('tabOverall').classList.add('active');
+  document.getElementById('tabEditions').classList.remove('active');
+}
+function showEditions(e) {
+  if (e) e.preventDefault();
+  currentView = 'editions';
+  document.getElementById('overallView').style.display = 'none';
+  document.getElementById('editionsView').style.display = '';
+  document.getElementById('tabOverall').classList.remove('active');
+  document.getElementById('tabEditions').classList.add('active');
+  renderEditionTabs();
+}
+
+// ---- TIME UTILS ----
+function parseTime(t) {
+  if (!t) return Infinity;
+  const parts = t.split(':').map(Number);
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  return Infinity;
+}
+function fmtTime(secs) {
+  if (!isFinite(secs)) return '—';
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+function diffStr(a, b) {
+  // a = current, b = pb (best ever)
+  if (!isFinite(a) || !isFinite(b)) return '';
+  const d = a - b;
+  if (d === 0) return '<span class="pb-badge">PB</span>';
+  if (d > 0) return `<span class="trend-down">+${fmtTime(d)}</span>`;
+  return `<span class="trend-up">${fmtTime(d)}</span>`;
+}
+
+// ---- DERIVED DATA ----
+function getRunnerPB(name) {
+  const times = DB.entries
+    .filter(e => e.name === name && e.status === 'ok' && e.time)
+    .map(e => parseTime(e.time));
+  return times.length ? Math.min(...times) : Infinity;
+}
+function allRunners() {
+  return [...new Set(DB.entries.map(e => e.name))].sort();
+}
+function courseRecord() {
+  const finished = DB.entries.filter(e => e.status === 'ok' && e.time);
+  if (!finished.length) return null;
+  const best = finished.reduce((a, b) => parseTime(a.time) < parseTime(b.time) ? a : b);
+  return best;
+}
+function editionEntries(edId) {
+  return DB.entries.filter(e => e.editionId === edId);
+}
+function sortedEditions() {
+  return [...DB.editions].sort((a,b) => a.num - b.num);
+}
+
+// ---- RENDER PUBLIC ----
+function renderPublic() {
+  const cfg = DB.config;
+  document.title = `${cfg.club} Time Trials`;
+  document.getElementById('clubNameLogo').textContent = cfg.club;
+  document.getElementById('heroClubName').textContent = cfg.club.toUpperCase();
+  document.getElementById('heroEyebrow').textContent = `${cfg.season} · ${cfg.distance} Time Trial`;
+
+  const eds = sortedEditions();
+  document.getElementById('statEdition').textContent = eds.length ? `Ed. ${eds[eds.length-1].num}` : '—';
+  document.getElementById('statRunners').textContent = allRunners().length || '—';
+
+  const cr = courseRecord();
+  if (cr) {
+    document.getElementById('statCourseRecord').textContent = cr.time;
+    document.getElementById('statHolder').textContent = cr.name;
+  } else {
+    document.getElementById('statCourseRecord').textContent = '—';
+    document.getElementById('statHolder').textContent = '—';
+  }
+
+  renderSeasonGrid();
+  if (currentView === 'editions') renderEditionTabs();
+}
+
+function renderSeasonGrid() {
+  const grid = document.getElementById('seasonGrid');
+  const runners = allRunners();
+  if (!runners.length) {
+    grid.innerHTML = '<div style="padding:3rem 2rem;text-align:center;color:var(--mid);font-size:.9rem;grid-column:1/-1;">No runners logged yet. Add some times in the Admin Console!</div>';
+    return;
+  }
+  const eds = sortedEditions();
+  const ranked = runners.map(name => ({
+    name,
+    pb: getRunnerPB(name),
+    count: DB.entries.filter(e => e.name === name && e.status === 'ok').length,
+    editions: eds.map(ed => {
+      const entry = DB.entries.find(e => e.editionId === ed.id && e.name === name);
+      return entry ? entry.status : null;
+    })
+  })).sort((a,b) => a.pb - b.pb);
+
+  grid.innerHTML = ranked.map((r, i) => {
+    const rank = i + 1;
+    const cls = rank === 1 ? 'top1' : '';
+    const dots = r.editions.map(s => {
+      if (s === null) return '<div class="dot"></div>';
+      if (s === 'ok') return '<div class="dot ran"></div>';
+      return '<div class="dot" style="background:var(--border);opacity:.5;"></div>';
+    }).join('');
+    const pbStr = isFinite(r.pb) ? r.pb === getRunnerPB(r.name) ? `<span class="runner-name" style="color:var(--red);">${fmtTime(r.pb)}</span>` : fmtTime(r.pb) : '—';
+    return `
+    <div class="runner-card fade-up ${cls}">
+      <div class="card-rank">${rank}</div>
+      <div class="card-name">${r.name}</div>
+      <div class="card-best">${isFinite(r.pb) ? fmtTime(r.pb) : '—'}</div>
+      <div class="card-meta">${r.count} finish${r.count !== 1 ? 'es' : ''} · Best time</div>
+      <div class="card-dots">${dots}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderEditionTabs() {
+  const eds = sortedEditions();
+  const tabBar = document.getElementById('editionTabs');
+  if (!eds.length) {
+    tabBar.innerHTML = '<span style="color:var(--mid);font-size:.8rem;padding:.5rem;">No editions yet.</span>';
+    document.getElementById('editionEmpty').classList.remove('hidden');
+    document.getElementById('editionTable').style.display = 'none';
+    return;
+  }
+  if (!currentEditionId || !eds.find(e => e.id === currentEditionId)) {
+    currentEditionId = eds[eds.length - 1].id;
+  }
+  tabBar.innerHTML = eds.map(ed => `
+    <button class="tab-btn ${ed.id === currentEditionId ? 'active' : ''}"
+      onclick="selectEditionTab('${ed.id}')">Ed. ${ed.num}</button>
+  `).join('');
+  renderEditionTable();
+}
+
+function selectEditionTab(id) {
+  currentEditionId = id;
+  renderEditionTabs();
+}
+
+function renderEditionTable() {
+  const ed = DB.editions.find(e => e.id === currentEditionId);
+  if (!ed) return;
+  const label = document.getElementById('editionLabel');
+  const d = ed.date ? new Date(ed.date).toLocaleDateString('en-IN', {day:'numeric',month:'long',year:'numeric'}) : '';
+  label.textContent = `Edition ${ed.num}${d ? ' — ' + d : ''}${ed.location ? ' · ' + ed.location : ''}`;
+
+  const entries = editionEntries(ed.id).filter(e => e.status === 'ok' && e.time)
+    .sort((a,b) => parseTime(a.time) - parseTime(b.time));
+  const dnfs = editionEntries(ed.id).filter(e => e.status !== 'ok');
+
+  const tbody = document.getElementById('editionTableBody');
+  const table = document.getElementById('editionTable');
+  const empty = document.getElementById('editionEmpty');
+
+  if (!entries.length && !dnfs.length) {
+    table.style.display = 'none';
+    empty.classList.remove('hidden');
+    return;
+  }
+  table.style.display = '';
+  empty.classList.add('hidden');
+
+  const pb_map = {};
+  entries.forEach(e => { pb_map[e.name] = getRunnerPB(e.name); });
+
+  tbody.innerHTML = entries.map((e, i) => {
+    const rank = i + 1;
+    const rankCls = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
+    const secs = parseTime(e.time);
+    const pb = pb_map[e.name];
+    const isPB = secs === pb;
+    const diff = isPB ? '<span class="pb-badge">PB</span>' : (isFinite(pb) ? `<span class="trend-down">+${fmtTime(secs - pb)}</span>` : '');
+    return `
+    <tr class="fade-up">
+      <td class="rank-cell ${rankCls}">${rank}</td>
+      <td><div class="runner-name">${e.name}</div></td>
+      <td class="num"><span class="time-chip">${e.time}</span>${diff}</td>
+      <td class="num"></td>
+    </tr>`;
+  }).join('') + dnfs.map(e => `
+    <tr>
+      <td class="rank-cell">—</td>
+      <td><div class="runner-name" style="opacity:.6;">${e.name}</div></td>
+      <td class="num"><span class="dnf">${e.status.toUpperCase()}</span></td>
+      <td></td>
+    </tr>`).join('');
+}
+
+// ---- RENDER ADMIN ----
+function renderAdmin() {
+  const cfg = DB.config;
+  document.getElementById('cfgClub').value = cfg.club;
+  document.getElementById('cfgSeason').value = cfg.season;
+  document.getElementById('cfgDistance').value = cfg.distance;
+
+  renderEditionSelects();
+  renderAdminEntries();
+}
+
+function renderEditionSelects() {
+  const eds = sortedEditions();
+  const opts = eds.map(ed => `<option value="${ed.id}">Edition ${ed.num}${ed.date ? ' (' + ed.date + ')' : ''}</option>`).join('');
+  document.getElementById('entryEdition').innerHTML = '<option value="">Select edition…</option>' + opts;
+  document.getElementById('filterEdition').innerHTML = '<option value="">All editions</option>' + opts;
+}
+
+function renderAdminEntries() {
+  const filterEd = document.getElementById('filterEdition').value;
+  const eds = sortedEditions();
+  const container = document.getElementById('adminEntries');
+
+  let html = '';
+  eds.forEach(ed => {
+    if (filterEd && ed.id !== filterEd) return;
+    const entries = editionEntries(ed.id).sort((a,b) => {
+      if (a.status === 'ok' && b.status === 'ok') return parseTime(a.time) - parseTime(b.time);
+      return 0;
+    });
+    html += `
+    <div style="margin-bottom:1.5rem;">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+        <span style="font-family:var(--ff-head);font-weight:700;font-size:.95rem;text-transform:uppercase;letter-spacing:.05em;">
+          Edition ${ed.num}${ed.date ? ' — ' + ed.date : ''}${ed.location ? ' · ' + ed.location : ''}
+        </span>
+        <button class="btn-danger" onclick="deleteEdition('${ed.id}')">Delete Edition</button>
+      </div>`;
+    if (!entries.length) {
+      html += `<div style="color:var(--mid);font-size:.82rem;padding:.5rem 0;">No entries yet.</div>`;
+    }
+    entries.forEach(e => {
+      html += `
+      <div class="entry-row">
+        <span class="runner-name" style="flex:1;">${e.name}</span>
+        <span class="time-chip">${e.status === 'ok' ? e.time : ''}</span>
+        <span class="tag-dns">${e.status === 'ok' ? '' : e.status.toUpperCase()}</span>
+        <button class="btn-secondary" style="font-size:.7rem;padding:.25rem .5rem;" onclick="editEntry('${e.id}')">Edit</button>
+        <button class="btn-danger" onclick="deleteEntry('${e.id}')">✕</button>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  if (!html) html = '<div style="color:var(--mid);font-size:.85rem;">No entries yet. Add editions and log some times!</div>';
+  container.innerHTML = html;
+}
+
+// ---- ADMIN ACTIONS ----
+function saveConfig() {
+  DB.config.club = document.getElementById('cfgClub').value.trim() || DB.config.club;
+  DB.config.season = document.getElementById('cfgSeason').value.trim() || DB.config.season;
+  DB.config.distance = document.getElementById('cfgDistance').value.trim() || DB.config.distance;
+  save();
+  toast('Settings saved ✓');
+}
+
+function addEdition() {
+  const num = parseInt(document.getElementById('newEdNum').value);
+  const date = document.getElementById('newEdDate').value;
+  const loc = document.getElementById('newEdLocation').value.trim();
+  if (!num) { toast('Enter an edition number'); return; }
+  if (DB.editions.find(e => e.num === num)) { toast('Edition ' + num + ' already exists'); return; }
+  DB.editions.push({ id: uid(), num, date, location: loc });
+  save();
+  renderEditionSelects();
+  renderAdminEntries();
+  document.getElementById('newEdNum').value = '';
+  document.getElementById('newEdDate').value = '';
+  document.getElementById('newEdLocation').value = '';
+  toast(`Edition ${num} added ✓`);
+}
+
+function addEntry() {
+  const edId = document.getElementById('entryEdition').value;
+  const name = document.getElementById('entryName').value.trim();
+  const time = document.getElementById('entryTime').value.trim();
+  const status = document.getElementById('entryStatus').value;
+  if (!edId) { toast('Select an edition'); return; }
+  if (!name) { toast('Enter a runner name'); return; }
+  if (status === 'ok' && !time) { toast('Enter a time'); return; }
+  if (status === 'ok' && !/^\d{1,2}:\d{2}(:\d{2})?$/.test(time)) { toast('Time format: mm:ss or hh:mm:ss'); return; }
+  // Check duplicate in same edition
+  const dup = DB.entries.find(e => e.editionId === edId && e.name.toLowerCase() === name.toLowerCase());
+  if (dup) { toast(name + ' already has an entry for this edition'); return; }
+
+  DB.entries.push({ id: uid(), editionId: edId, name, time: status === 'ok' ? time : '', status });
+  save();
+  renderAdminEntries();
+  document.getElementById('entryName').value = '';
+  document.getElementById('entryTime').value = '';
+  toast(`${name} logged ✓`);
+}
+
+function editEntry(id) {
+  const e = DB.entries.find(x => x.id === id);
+  if (!e) return;
+  const name = prompt('Runner name:', e.name);
+  if (name === null) return;
+  const time = prompt('Time (mm:ss) — leave blank for DNF/DNS:', e.time);
+  if (time === null) return;
+  const status = time.trim() ? 'ok' : (prompt('Status: dnf or dns', e.status === 'ok' ? 'dnf' : e.status) || 'dnf');
+  e.name = name.trim() || e.name;
+  e.time = time.trim();
+  e.status = e.time ? 'ok' : status;
+  save();
+  renderAdminEntries();
+  toast('Entry updated ✓');
+}
+
+function deleteEntry(id) {
+  if (!confirm('Delete this entry?')) return;
+  DB.entries = DB.entries.filter(e => e.id !== id);
+  save();
+  renderAdminEntries();
+  toast('Entry removed');
+}
+
+function deleteEdition(id) {
+  const ed = DB.editions.find(e => e.id === id);
+  if (!confirm(`Delete Edition ${ed?.num} and ALL its entries? This cannot be undone.`)) return;
+  DB.editions = DB.editions.filter(e => e.id !== id);
+  DB.entries = DB.entries.filter(e => e.editionId !== id);
+  save();
+  renderEditionSelects();
+  renderAdminEntries();
+  toast('Edition deleted');
+}
+
+// ---- UTILS ----
+function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ---- HIDDEN IMPORT / EXPORT ----
+// Access via browser console: exportData() / importData()
+window.exportData = () => {
+  const blob = new Blob([JSON.stringify(DB, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'timetrial-backup.json'; a.click();
+};
+window.importData = (jsonStr) => {
+  try { DB = JSON.parse(jsonStr); save(); renderPublic(); toast('Data imported ✓'); }
+  catch(e) { toast('Import failed: invalid JSON'); }
+};
+
+// ---- INIT ----
+renderPublic();
+</script>
+</body>
+</html>
