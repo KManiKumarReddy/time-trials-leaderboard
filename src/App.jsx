@@ -5,6 +5,7 @@ import Admin from './pages/Admin';
 import { fetchStats } from './api/github';
 
 const POLL_INTERVAL = 10000; // 10 seconds
+const STALE_LOCK_DURATION = 35000; // 35 seconds to allow Gist CDN to clear
 
 function NavBar({ clubName }) {
   const location = useLocation();
@@ -40,8 +41,15 @@ function App() {
   const [error, setError] = useState(null);
   const [isLive, setIsLive] = useState(false);
   const lastJsonRef = useRef('');
+  const skipFetchUntilRef = useRef(0);
 
   const loadData = useCallback(async (silent = false) => {
+    // Skip if we are in a "stale lock" period after a local update
+    if (silent && Date.now() < skipFetchUntilRef.current) {
+      console.log("Skipping fetch: data was recently updated and Gist CDN might be stale.");
+      return;
+    }
+
     if (!silent) {
       setLoading(true);
       setError(null);
@@ -64,6 +72,15 @@ function App() {
     } finally {
       if (!silent) setLoading(false);
     }
+  }, []);
+
+  // Admin calls this to update local UI immediately and prevent fetching stale Gist data
+  const handleLocalUpdate = useCallback((newData) => {
+    const json = JSON.stringify(newData);
+    lastJsonRef.current = json;
+    setData(newData);
+    // Lock fetching for 35 seconds to ensure we don't pull back stale data from CDN
+    skipFetchUntilRef.current = Date.now() + STALE_LOCK_DURATION;
   }, []);
 
   useEffect(() => {
@@ -98,7 +115,16 @@ function App() {
         ) : (
           <Routes>
             <Route path="/" element={<Leaderboard data={data} isLive={isLive} />} />
-            <Route path="/admin" element={<Admin data={data} reloadData={() => loadData()} />} />
+            <Route 
+              path="/admin" 
+              element={
+                <Admin 
+                  data={data} 
+                  reloadData={() => loadData()} 
+                  onLocalDataUpdate={handleLocalUpdate}
+                />
+              } 
+            />
           </Routes>
         )}
       </main>

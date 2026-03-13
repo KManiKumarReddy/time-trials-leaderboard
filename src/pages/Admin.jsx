@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { updateStats } from '../api/github';
-import { PlusCircle, Save, Settings, Loader2, Lock, X, Trash2 } from 'lucide-react';
+import { PlusCircle, Save, Settings, Loader2, Lock, X, Trash2, AlertCircle } from 'lucide-react';
 import CryptoJS from 'crypto-js';
 
 // Split MM:SS input component
@@ -52,16 +52,16 @@ function TimeInput({ value, onChange }) {
 }
 
 // Publish confirmation modal
-function PublishModal({ onConfirm, onCancel, isSaving, changeSummary }) {
+function PublishModal({ onConfirm, onCancel, isSaving, changeSummary, publishError }) {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [validationError, setValidationError] = useState('');
 
   const handleConfirm = () => {
     if (!password) {
-      setError('Password is required.');
+      setValidationError('Password is required.');
       return;
     }
-    setError('');
+    setValidationError('');
     onConfirm(password);
   };
 
@@ -73,7 +73,17 @@ function PublishModal({ onConfirm, onCancel, isSaving, changeSummary }) {
           <button onClick={onCancel} className="text-text-muted hover:text-white"><X size={20} /></button>
         </div>
 
-        <div className="bg-[#0a0a0a] border border-[#222] rounded-lg p-4 text-sm space-y-1">
+        {/* Errors inside modal */}
+        {(validationError || publishError) && (
+          <div className="bg-red-950/30 border border-red-500/50 rounded-lg p-3 flex items-start gap-3">
+            <AlertCircle className="text-red-400 shrink-0 mt-0.5" size={16} />
+            <div className="text-red-200 text-xs font-bold leading-tight">
+              {validationError || publishError}
+            </div>
+          </div>
+        )}
+
+        <div className="bg-[#0a0a0a] border border-[#222] rounded-lg p-4 text-sm space-y-1 overflow-y-auto max-h-48">
           <div className="text-text-muted font-bold text-xs uppercase tracking-widest mb-2">Change Summary</div>
           {changeSummary.map((line, i) => (
             <div key={i} className="text-white/80">{line}</div>
@@ -93,7 +103,6 @@ function PublishModal({ onConfirm, onCancel, isSaving, changeSummary }) {
             autoFocus
             className="w-full bg-[#0a0a0a] border border-[#333] rounded-lg px-4 py-3 text-white focus:border-brand-red focus:ring-1 focus:ring-brand-red outline-none transition-all font-mono text-sm"
           />
-          {error && <p className="text-red-400 text-xs mt-2 font-bold">{error}</p>}
         </div>
 
         <div className="flex gap-3">
@@ -114,9 +123,10 @@ function PublishModal({ onConfirm, onCancel, isSaving, changeSummary }) {
   );
 }
 
-export default function Admin({ data, reloadData }) {
+export default function Admin({ data, reloadData, onLocalDataUpdate }) {
   const [isSaving, setIsSaving] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [modalError, setModalError] = useState(null);
   const [bulkNames, setBulkNames] = useState('');
   const [showModal, setShowModal] = useState(false);
 
@@ -124,6 +134,11 @@ export default function Admin({ data, reloadData }) {
   const [localData, setLocalData] = useState(() => {
     return data ? JSON.parse(JSON.stringify(data)) : null;
   });
+
+  // Calculate if there are any changes
+  const isDirty = useMemo(() => {
+    return JSON.stringify(data) !== JSON.stringify(localData);
+  }, [data, localData]);
 
   if (!localData) return null;
 
@@ -239,28 +254,32 @@ export default function Admin({ data, reloadData }) {
 
   const handlePublish = async (password) => {
     setIsSaving(true);
+    setModalError(null);
     setMsg(null);
     
     try {
       const encryptedPat = import.meta.env.VITE_ENCRYPTED_PAT;
       
       if (!encryptedPat) {
-        throw new Error('No encrypted PAT found in build. Ensure env variables are set in GitHub Actions.');
+        throw new Error('No encrypted PAT found in build.');
       }
 
       const bytes = CryptoJS.AES.decrypt(encryptedPat, password);
       const decryptedPat = bytes.toString(CryptoJS.enc.Utf8);
 
       if (!decryptedPat || decryptedPat.length < 10) {
-        throw new Error('Incorrect Password. Decryption failed.');
+        throw new Error('Incorrect Password.');
       }
 
       await updateStats(decryptedPat, localData);
-      setMsg({ type: 'success', text: 'Published! Changes are live instantly.' });
+      
+      // Update parent state immediately to reflect new data and lock polling
+      onLocalDataUpdate(localData);
+
+      setMsg({ type: 'success', text: 'Published! Site is now synced.' });
       setShowModal(false);
-      reloadData();
     } catch(err) {
-      setMsg({ type: 'error', text: err.message || 'Failed to update. Check console.' });
+      setModalError(err.message || 'Failed to update. Check console.');
     } finally {
       setIsSaving(false);
     }
@@ -272,9 +291,13 @@ export default function Admin({ data, reloadData }) {
       {showModal && (
         <PublishModal
           onConfirm={handlePublish}
-          onCancel={() => setShowModal(false)}
+          onCancel={() => {
+            setShowModal(false);
+            setModalError(null);
+          }}
           isSaving={isSaving}
           changeSummary={getChangeSummary()}
+          publishError={modalError}
         />
       )}
 
@@ -284,8 +307,24 @@ export default function Admin({ data, reloadData }) {
           <Settings size={120} className="text-white" />
         </div>
         
-        <h2 className="font-display font-black text-2xl sm:text-3xl uppercase tracking-wider mb-2">Admin Dashboard</h2>
-        <p className="text-text-muted text-sm">Make your changes below. Tap "Review & Publish" when ready — changes go live instantly.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="font-display font-black text-2xl sm:text-3xl uppercase tracking-wider mb-2">Admin Dashboard</h2>
+            <p className="text-text-muted text-sm">Make your changes below. Tap "Review & Publish" when ready.</p>
+          </div>
+          {!isDirty && (
+            <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 self-start sm:self-center">
+              <div className="w-2 h-2 rounded-full bg-text-muted" />
+              <span className="text-text-muted text-[0.65rem] font-bold uppercase tracking-widest">No Unsaved Changes</span>
+            </div>
+          )}
+          {isDirty && (
+            <div className="flex items-center gap-2 bg-brand-red/10 border border-brand-red/30 rounded-full px-3 py-1.5 self-start sm:self-center animate-pulse">
+              <div className="w-2 h-2 rounded-full bg-brand-red" />
+              <span className="text-brand-red text-[0.65rem] font-bold uppercase tracking-widest">Unsaved Changes</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {msg && (
@@ -431,9 +470,10 @@ export default function Admin({ data, reloadData }) {
         <div className="max-w-[1100px] w-full mx-auto flex justify-end">
           <button 
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 bg-brand-red hover:bg-brand-red-dark text-white font-display font-bold px-5 sm:px-8 py-3 rounded-lg uppercase tracking-widest transition-colors text-sm sm:text-base"
+            disabled={!isDirty}
+            className="flex items-center gap-2 bg-brand-red disabled:bg-[#222] disabled:text-text-muted hover:bg-brand-red-dark text-white font-display font-bold px-5 sm:px-8 py-3 rounded-lg uppercase tracking-widest transition-all text-sm sm:text-base border border-transparent disabled:border-white/5"
           >
-            <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Save className={`w-4 h-4 sm:w-5 sm:h-5 ${!isDirty ? 'opacity-20' : ''}`} />
             Review & Publish
           </button>
         </div>
