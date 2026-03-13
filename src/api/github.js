@@ -19,17 +19,17 @@ export async function fetchStats() {
  * Updates the remote repository data.json using the GitHub REST API.
  */
 export async function updateStats(pat, newData) {
-  // Use repository injected from GitHub Actions build, fallback to data.json if missing
+  // Use repository injected from GitHub Actions build
   const githubOwner = import.meta.env.GITHUB_OWNER || newData.config.githubOwner;
   const githubRepo = import.meta.env.GITHUB_REPO || newData.config.githubRepo;
 
   if (!githubOwner || !githubRepo) {
-    throw new Error('GitHub Owner and Repo must be configured in Global Settings or provided by GitHub Actions environment');
+    throw new Error('GitHub Owner and Repo must be provided by GitHub Actions environment or fallback settings.');
   }
 
-  // Safely maintain them in data.json config explicitly
-  newData.config.githubOwner = githubOwner;
-  newData.config.githubRepo = githubRepo;
+  // Do not store these in data.json; they are fetched at build-time.
+  delete newData.config.githubOwner;
+  delete newData.config.githubRepo;
 
   const url = `https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${DATA_PATH}`;
 
