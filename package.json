@@ -7,7 +7,9 @@
     "dev": "node scripts/encrypt.js && vite",
     "build": "node scripts/encrypt.js && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gist-pull": "node scripts/sync-gist.js pull",
+    "gist-push": "node scripts/sync-gist.js push"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",

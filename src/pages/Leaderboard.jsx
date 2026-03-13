@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Trophy, Clock, Target, CalendarDays, Activity } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Trophy, Clock, Target, CalendarDays, Activity, Share2, Check, ExternalLink } from 'lucide-react';
 
 function StatCard({ icon: Icon, value, label, highlight }) {
   return (
@@ -16,7 +17,35 @@ function StatCard({ icon: Icon, value, label, highlight }) {
   );
 }
 
-function RunnerCard({ rank, name, time, pb, date, pace }) {
+function RunnerCard({ id, rank, name, time, pb, date, pace, isHighlighted }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = (e) => {
+    e.stopPropagation();
+    const url = new URL(window.location.href);
+    url.searchParams.set('runner', id);
+    const shareUrl = url.toString();
+
+    if (navigator.share) {
+      navigator.share({
+        title: `${name}'s Time Trial Record`,
+        text: `Check out ${name}'s ${time} run at the LB Nagar Runners Time Trial!`,
+        url: shareUrl
+      }).catch(() => {
+        // Fallback to copy if share fails/cancelled
+        copyToClipboard(shareUrl);
+      });
+    } else {
+      copyToClipboard(shareUrl);
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const rankColors = {
     1: 'text-brand-gold shadow-[0_0_20px_rgba(200,150,46,0.15)] border-brand-gold/30 bg-gradient-to-b from-brand-gold/5 to-transparent',
     2: 'text-[#C0C0C0] shadow-[0_0_20px_rgba(192,192,192,0.1)] border-[#C0C0C0]/20 bg-gradient-to-b from-[#C0C0C0]/5 to-transparent',
@@ -32,23 +61,38 @@ function RunnerCard({ rank, name, time, pb, date, pace }) {
   const isPodium = rank <= 3;
 
   return (
-    <div className={`flex items-center justify-between p-3 sm:p-5 rounded-xl border border-border-subtle bg-bg-card hover:bg-bg-card-hover transition-all group ${isPodium ? rankColors[rank] : 'hover:border-white/10'}`}>
-      <div className="flex items-center gap-3 sm:gap-6">
+    <div 
+      id={id}
+      className={`flex items-center justify-between p-3 sm:p-5 rounded-xl border transition-all group relative ${
+        isHighlighted 
+          ? 'border-brand-red bg-brand-red/5 ring-1 ring-brand-red/50 shadow-[0_0_30px_rgba(255,0,0,0.1)]' 
+          : isPodium 
+            ? `${rankColors[rank]} border-border-subtle` 
+            : 'bg-bg-card border-border-subtle hover:bg-bg-card-hover hover:border-white/10'
+      }`}
+    >
+      {isHighlighted && (
+        <div className="absolute -top-2 -left-2 bg-brand-red text-white text-[0.5rem] font-bold px-2 py-0.5 rounded tracking-widest uppercase">
+          Shared Record
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 sm:gap-6 overflow-hidden">
         <div className={`font-display font-black text-2xl sm:text-4xl italic transition-transform group-hover:scale-110 w-9 sm:w-12 text-center leading-none ${isPodium ? '' : 'text-text-muted/40'}`}>
           {rank.toString().padStart(2, '0')}
         </div>
         
         {/* Avatar ring - hidden on mobile */}
-        <div className={`hidden sm:flex w-12 h-12 rounded-full border-2 items-center justify-center bg-[#1a1a1a] ${isPodium ? ringColors[rank] : 'border-[#333]'}`}>
+        <div className={`hidden sm:flex w-12 h-12 rounded-full border-2 items-center justify-center bg-[#1a1a1a] shrink-0 ${isPodium ? ringColors[rank] : 'border-[#333]'}`}>
           <span className="font-display font-bold text-lg text-white/50">{name.charAt(0)}</span>
         </div>
 
-        <div className="flex flex-col">
-          <div className="font-sans font-bold text-sm sm:text-lg tracking-tight text-white">{name}</div>
+        <div className="flex flex-col min-w-0">
+          <div className="font-sans font-bold text-sm sm:text-lg tracking-tight text-white truncate">{name}</div>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-8 text-right">
+      <div className="flex items-center gap-3 sm:gap-8 text-right shrink-0">
         <div className="flex flex-col">
           <div className="flex items-center gap-1.5 sm:gap-2 justify-end">
             <div className={`font-display font-black text-xl sm:text-3xl tracking-wide tabular-nums leading-none ${pb ? 'text-neon-accent' : 'text-white'}`}>
@@ -62,6 +106,15 @@ function RunnerCard({ rank, name, time, pb, date, pace }) {
             <span>{pace} <span className="lowercase">/km</span></span>
           </div>
         </div>
+
+        <button 
+          onClick={handleShare}
+          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${
+            copied ? 'bg-green-500/20 text-green-400 border-green-500/50' : 'bg-white/5 border border-white/10 text-text-muted hover:text-white hover:border-white/30'
+          }`}
+        >
+          {copied ? <Check size={16} /> : <Share2 size={16} />}
+        </button>
       </div>
     </div>
   );
@@ -79,6 +132,31 @@ const parseTime = (timeStr) => {
 
 export default function Leaderboard({ data, isLive }) {
   const [activeTab, setActiveTab] = useState('overall');
+  const location = useLocation();
+  const [highlightedId, setHighlightedId] = useState(null);
+
+  // Check for runner ID in URL and also setup Tab based on it
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const runnerId = params.get('runner');
+    if (runnerId) {
+      setHighlightedId(runnerId);
+      // Try to find which tab this runner belongs to
+      if (data?.entries) {
+        const found = data.entries.find(e => e.id === runnerId);
+        if (found) {
+          // If viewing an individual edition, switch to it, otherwise keep overall
+          // Most shared links will be from overall standing if it's their PR
+        }
+      }
+
+      // Scroll to it
+      setTimeout(() => {
+        const el = document.getElementById(runnerId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500);
+    }
+  }, [location, data]);
 
   // Defensive check
   if (!data) return null;
@@ -86,36 +164,56 @@ export default function Leaderboard({ data, isLive }) {
   const { config, editions, entries } = data;
 
   // Process data for overall standing
-  const overallPerformances = {};
-  entries.forEach(entry => {
-    if (entry.status !== 'ok') return;
-    
-    // Convert time to seconds for comparison
-    const totalSecs = parseTime(entry.time);
-    if (totalSecs >= 999999) return;
-    
-    if (!overallPerformances[entry.name] || totalSecs < overallPerformances[entry.name].totalSecs) {
-      overallPerformances[entry.name] = {
-        name: entry.name,
-        time: entry.time,
-        totalSecs,
-        editionId: entry.editionId
-      };
-    }
-  });
+  const overallPerformances = useMemo(() => {
+    const perfs = {};
+    entries.forEach(entry => {
+      if (entry.status !== 'ok') return;
+      
+      const totalSecs = parseTime(entry.time);
+      if (totalSecs >= 999999) return;
+      
+      if (!perfs[entry.name] || totalSecs < perfs[entry.name].totalSecs) {
+        perfs[entry.name] = {
+          id: entry.id, // Keep the ID for the PR performance
+          name: entry.name,
+          time: entry.time,
+          totalSecs,
+          editionId: entry.editionId
+        };
+      }
+    });
+    return perfs;
+  }, [entries]);
 
-  const overallSorted = Object.values(overallPerformances).sort((a, b) => a.totalSecs - b.totalSecs);
+  const overallSorted = useMemo(() => {
+    return Object.values(overallPerformances).sort((a, b) => a.totalSecs - b.totalSecs);
+  }, [overallPerformances]);
 
   const courseRecord = overallSorted[0]?.time || "—";
   const recordHolder = overallSorted[0]?.name || "—";
+
+  const handleShareLeaderboard = () => {
+    const url = window.location.origin + window.location.pathname;
+    if (navigator.share) {
+      navigator.share({
+        title: `${config.club} Leaderboard`,
+        text: `Check out the ${config.season} time trial records for ${config.club}!`,
+        url: url
+      });
+    } else {
+      navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard!');
+    }
+  };
 
   return (
     <div className="pb-24">
       {/* Hero Header */}
       <div className="py-8 sm:py-12 md:py-16">
         {config.coverPhotoUrl && (
-          <div className="w-full h-40 sm:h-48 md:h-72 rounded-2xl overflow-hidden mb-6 sm:mb-10 shadow-[0_0_30px_rgba(255,255,255,0.05)] border border-border-subtle">
-            <img src={config.coverPhotoUrl} alt="Cover" className="w-full h-full object-cover" />
+          <div className="w-full h-40 sm:h-48 md:h-72 rounded-2xl overflow-hidden mb-6 sm:mb-10 shadow-[0_0_30px_rgba(255,255,255,0.05)] border border-border-subtle group relative">
+            <img src={config.coverPhotoUrl} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </div>
         )}
 
@@ -138,18 +236,24 @@ export default function Leaderboard({ data, isLive }) {
         </div>
 
         {config.description && (
-          <p className="max-w-2xl text-text-muted text-sm md:text-base leading-relaxed mb-6 border-l-2 border-[#333] pl-4">
+          <p className="max-w-2xl text-text-muted text-sm md:text-base leading-relaxed mb-8 border-l-2 border-[#333] pl-4">
             {config.description}
           </p>
         )}
 
-        {config.googleForm && (
-          <div className="mb-10">
-            <a href={config.googleForm} target="_blank" rel="noopener noreferrer" className="inline-block bg-brand-red hover:bg-[#aa0000] text-white font-display font-bold px-8 py-3 rounded-lg uppercase tracking-widest transition-all text-sm shadow-[0_4px_14px_rgba(255,0,0,0.2)]">
-              Register / Sign Up
+        <div className="flex flex-wrap gap-4 mb-10">
+          {config.googleForm && (
+            <a href={config.googleForm} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-brand-red hover:bg-[#aa0000] text-white font-display font-bold px-8 py-3 rounded-lg uppercase tracking-widest transition-all text-sm shadow-[0_4px_14px_rgba(255,0,0,0.2)]">
+              Register Now <ExternalLink size={14} />
             </a>
-          </div>
-        )}
+          )}
+          <button 
+            onClick={handleShareLeaderboard}
+            className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-display font-bold px-6 py-3 rounded-lg uppercase tracking-widest transition-all text-sm"
+          >
+            Share <Share2 size={14} />
+          </button>
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard highlight icon={Activity} value={editions.length.toString()} label="Current Edition" />
@@ -187,12 +291,14 @@ export default function Leaderboard({ data, isLive }) {
             overallSorted.map((runner, idx) => (
               <RunnerCard 
                 key={runner.name}
+                id={runner.id}
                 rank={idx + 1}
                 name={runner.name}
                 time={runner.time}
                 pb={false}
                 date={config.season}
                 pace={(runner.totalSecs / 5 / 60).toFixed(2).replace('.', ':')}
+                isHighlighted={highlightedId === runner.id}
               />
             ))
           ) : (
@@ -220,12 +326,14 @@ export default function Leaderboard({ data, isLive }) {
                 return (
                   <RunnerCard 
                     key={`${runner.name}-${idx}`}
+                    id={runner.id}
                     rank={idx + 1}
                     name={runner.name}
                     time={runner.time}
                     pb={isOverallPB}
                     date={editionInfo?.date || "—"}
                     pace={totalSecs < 999999 ? (totalSecs / 5 / 60).toFixed(2).replace('.', ':') : "—"}
+                    isHighlighted={highlightedId === runner.id}
                   />
                 );
               })

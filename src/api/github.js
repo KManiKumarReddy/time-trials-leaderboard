@@ -3,21 +3,22 @@ const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
 
 /**
  * Fetches data from the public Gist raw URL (no auth needed).
- * Falls back to the local static data.json for dev mode.
+ * Since we've moved to Gist-as-backend, this is the primary source of truth.
  */
 export async function fetchStats() {
+  if (!GIST_ID || !GITHUB_OWNER) {
+    throw new Error('GIST_ID or GITHUB_OWNER is not configured. Please check your .env.local or GitHub Actions variables.');
+  }
+
   try {
-    let url;
-    if (GIST_ID && GITHUB_OWNER) {
-      // Production: fetch from public Gist raw URL (no auth, no rate limit)
-      url = `https://gist.githubusercontent.com/${GITHUB_OWNER}/${GIST_ID}/raw/data.json?t=${Date.now()}`;
-    } else {
-      // Local dev: fetch from static public/data.json
-      url = `${import.meta.env.BASE_URL}data.json`;
-    }
+    // Fetch from public Gist raw URL (no auth, no rate limit)
+    // T-param is for cache busting
+    const url = `https://gist.githubusercontent.com/${GITHUB_OWNER}/${GIST_ID}/raw/data.json?t=${Date.now()}`;
 
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) throw new Error('Network response was not ok');
+    if (!res.ok) {
+      throw new Error(`Failed to fetch Gist data: ${res.status} ${res.statusText}`);
+    }
     return await res.json();
   } catch (err) {
     console.error("Could not fetch data:", err);
@@ -31,7 +32,7 @@ export async function fetchStats() {
  */
 export async function updateStats(pat, newData) {
   if (!GIST_ID) {
-    throw new Error('GIST_ID is not configured. Ensure it is set as a GitHub Actions variable.');
+    throw new Error('GIST_ID is not configured.');
   }
 
   const url = `https://api.github.com/gists/${GIST_ID}`;

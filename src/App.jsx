@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Leaderboard from './pages/Leaderboard';
 import Admin from './pages/Admin';
 import { fetchStats } from './api/github';
+import { Instagram, Facebook, Youtube, Twitter, Mail, Globe } from 'lucide-react';
 
 const POLL_INTERVAL = 10000; // 10 seconds
 const STALE_LOCK_DURATION = 35000; // 35 seconds to allow Gist CDN to clear
@@ -35,6 +36,75 @@ function NavBar({ clubName }) {
   );
 }
 
+function Footer({ social, config }) {
+  const icons = {
+    instagram: <Instagram size={18} />,
+    facebook: <Facebook size={18} />,
+    youtube: <Youtube size={18} />,
+    twitter: <Twitter size={18} />,
+    website: <Globe size={18} />,
+    email: <Mail size={18} />
+  };
+
+  return (
+    <footer className="bg-[#0d0d0d] border-t border-white/5 py-12 mt-12">
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+          <div className="space-y-4">
+            <h3 className="font-display font-black text-2xl uppercase tracking-tighter italic">
+              <span className="text-brand-red">{config?.club?.split(' ')[0] || 'LB'}</span> {config?.club?.split(' ').slice(1).join(' ') || 'Nagar Runners'}
+            </h3>
+            <p className="text-text-muted text-sm max-w-sm leading-relaxed">
+              {config?.description}
+            </p>
+            {social?.affiliation && (
+              <div className="pt-2">
+                <p className="text-[0.65rem] font-bold uppercase tracking-widest text-text-muted mb-1">Affiliation</p>
+                <a 
+                  href={social.affiliationUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-white/60 hover:text-brand-red transition-colors"
+                >
+                  {social.affiliation}
+                </a>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-6 md:text-right md:flex md:flex-col md:items-end">
+            <div>
+              <p className="text-[0.65rem] font-bold uppercase tracking-widest text-text-muted mb-4 md:text-right">Connect with us</p>
+              <div className="flex gap-4 md:justify-end">
+                {Object.entries(social || {}).map(([key, url]) => {
+                  if (icons[key]) {
+                    return (
+                      <a 
+                        key={key}
+                        href={key === 'email' ? `mailto:${url}` : url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-text-muted hover:text-brand-red hover:border-brand-red/50 transition-all"
+                        title={key}
+                      >
+                        {icons[key]}
+                      </a>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            </div>
+            <p className="text-[0.6rem] text-text-muted uppercase tracking-widest pt-4">
+              © {new Date().getFullYear()} {config?.club}. Built for runners.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,10 +113,34 @@ function App() {
   const lastJsonRef = useRef('');
   const skipFetchUntilRef = useRef(0);
 
+  // SEO Update logic
+  useEffect(() => {
+    if (!data?.config?.seo) return;
+    const { seo } = data.config;
+    
+    document.title = seo.title || 'Leaderboard';
+    
+    const updateMeta = (name, content, attr = 'name') => {
+      let el = document.querySelector(`meta[${attr}="${name}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, name);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    };
+
+    updateMeta('description', seo.description);
+    updateMeta('keywords', seo.keywords);
+    updateMeta('og:title', seo.title, 'property');
+    updateMeta('og:description', seo.description, 'property');
+    updateMeta('og:image', seo.ogImage, 'property');
+    updateMeta('twitter:card', 'summary_large_image');
+  }, [data]);
+
   const loadData = useCallback(async (silent = false) => {
     // Skip if we are in a "stale lock" period after a local update
     if (silent && Date.now() < skipFetchUntilRef.current) {
-      console.log("Skipping fetch: data was recently updated and Gist CDN might be stale.");
       return;
     }
 
@@ -128,6 +222,7 @@ function App() {
           </Routes>
         )}
       </main>
+      <Footer social={data?.config?.social} config={data?.config} />
     </div>
   );
 }
