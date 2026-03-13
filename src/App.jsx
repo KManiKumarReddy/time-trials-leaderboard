@@ -4,7 +4,7 @@ import Leaderboard from './pages/Leaderboard';
 import Admin from './pages/Admin';
 import { fetchStats } from './api/github';
 
-function NavBar() {
+function NavBar({ clubName }) {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
 
@@ -12,7 +12,7 @@ function NavBar() {
     <header className="sticky top-0 z-50 bg-[#0d0d0d] border-b-[3px] border-brand-red">
       <div className="max-w-[1100px] mx-auto px-6 h-[60px] flex items-center justify-between">
         <Link to="/" className="font-display font-black text-[1.3rem] tracking-wider uppercase text-paper no-underline">
-          <span className="text-brand-red">Pacers</span> Run Club
+          <span className="text-brand-red">{clubName ? clubName.split(' ')[0] : 'Time'}</span> {clubName ? clubName.split(' ').slice(1).join(' ') : 'Trials'}
         </Link>
         <nav className="flex gap-6 items-center">
           {!isAdmin ? (
@@ -57,7 +57,7 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[#0a0a0a] text-[#f5f5f5]">
-      <NavBar />
+      <NavBar clubName={data?.config?.club} />
       <main className="flex-1 w-full max-w-[1100px] mx-auto">
         {loading ? (
           <div className="flex h-64 items-center justify-center text-text-muted">

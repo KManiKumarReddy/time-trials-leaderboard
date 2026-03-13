@@ -7,6 +7,7 @@ export default function Admin({ data, reloadData }) {
   const [password, setPassword] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [bulkNames, setBulkNames] = useState('');
 
   // Local state copy of the data that we can mutate
   const [localData, setLocalData] = useState(() => {
@@ -63,6 +64,26 @@ export default function Admin({ data, reloadData }) {
       }));
     }
   }
+
+  const handleBulkAdd = () => {
+    if (!bulkNames.trim()) return;
+    const names = bulkNames.split('\n').map(n => n.trim()).filter(n => n);
+    const editionId = editions[editions.length-1]?.id || '';
+    
+    const newEntries = names.map((name, i) => ({
+      id: `entry_${Date.now()}_${i}`,
+      editionId,
+      name,
+      time: '',
+      status: 'dns'
+    }));
+    
+    setLocalData(prev => ({
+      ...prev,
+      entries: [...newEntries, ...prev.entries]
+    }));
+    setBulkNames('');
+  };
 
   const saveChanges = async () => {
     if(!password) {
@@ -148,6 +169,30 @@ export default function Admin({ data, reloadData }) {
             <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">Distance (e.g. 5K)</label>
             <input type="text" name="distance" value={config.distance || ''} onChange={handleConfigChange} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
           </div>
+          <div>
+            <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">GitHub Owner</label>
+            <input type="text" name="githubOwner" value={config.githubOwner || ''} onChange={handleConfigChange} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
+          </div>
+          <div>
+            <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">GitHub Repo</label>
+            <input type="text" name="githubRepo" value={config.githubRepo || ''} onChange={handleConfigChange} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
+          </div>
+          <div className="md:col-span-3">
+            <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">Cover Photo URL (optional)</label>
+            <input type="text" name="coverPhotoUrl" value={config.coverPhotoUrl || ''} onChange={handleConfigChange} placeholder="https://..." className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
+          </div>
+          <div className="md:col-span-3">
+            <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">Description (Markdown disabled, just text)</label>
+            <textarea name="description" value={config.description || ''} onChange={handleConfigChange} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none h-20" />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">Link to Signup / Google Form</label>
+            <input type="text" name="googleForm" value={config.googleForm || ''} onChange={handleConfigChange} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
+          </div>
+          <div>
+            <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">Location</label>
+            <input type="text" name="location" value={config.location || ''} onChange={handleConfigChange} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
+          </div>
         </div>
       </div>
 
@@ -191,6 +236,22 @@ export default function Admin({ data, reloadData }) {
           <button onClick={handleAddEntry} className="flex items-center gap-1.5 text-xs text-brand-red font-bold hover:text-brand-red-dark">
             <PlusCircle size={14} /> Add Entry
           </button>
+        </div>
+
+        <div className="bg-[#111] border border-[#333] p-4 rounded-xl space-y-3 mb-6">
+          <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">Bulk Add / Preload Participants (1 name per line)</label>
+          <div className="flex gap-2 items-start">
+            <textarea 
+              value={bulkNames} 
+              onChange={e => setBulkNames(e.target.value)} 
+              placeholder="John Doe\nJane Smith\n..."
+              className="w-full bg-[#0a0a0a] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none h-24 text-sm"
+            />
+            <button onClick={handleBulkAdd} className="bg-[#222] hover:bg-[#333] text-white px-4 py-2 font-bold text-sm tracking-wide rounded-lg whitespace-nowrap h-24 border border-border-subtle hover:border-brand-red transition-all">
+              Add Names
+            </button>
+          </div>
+          <p className="text-xs text-text-muted">Names will be added to the most recent Edition, set as DNS (Did Not Start), with empty times. You can edit their times later.</p>
         </div>
         
         {entries.length === 0 && <div className="text-text-muted text-sm italic py-4">No entries yet.</div>}

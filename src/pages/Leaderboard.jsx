@@ -116,15 +116,35 @@ export default function Leaderboard({ data }) {
     <div className="pb-24">
       {/* Hero Header */}
       <div className="py-12 md:py-16">
-        <div className="flex flex-col space-y-2 mb-8">
+        {config.coverPhotoUrl && (
+          <div className="w-full h-48 md:h-72 rounded-2xl overflow-hidden mb-10 shadow-[0_0_30px_rgba(255,255,255,0.05)] border border-border-subtle">
+            <img src={config.coverPhotoUrl} alt="Cover" className="w-full h-full object-cover" />
+          </div>
+        )}
+
+        <div className="flex flex-col space-y-2 mb-6">
           <div className="text-brand-red font-bold text-xs tracking-[0.2em] uppercase font-display">
-            {config.season} • {config.distance} Series
+            {config.season} • {config.distance} Series {config.location && `• ${config.location}`}
           </div>
           <h1 className="font-display font-black text-5xl md:text-7xl uppercase italic tracking-tighter leading-none">
-            <span className="text-white">Time Trial </span>
+            <span className="text-white">{config.club || 'Time Trial'} </span>
             <span className="text-transparent" style={{ WebkitTextStroke: '2px #f5f5f5' }}>Leaderboard</span>
           </h1>
         </div>
+
+        {config.description && (
+          <p className="max-w-2xl text-text-muted text-sm md:text-base leading-relaxed mb-6 border-l-2 border-[#333] pl-4">
+            {config.description}
+          </p>
+        )}
+
+        {config.googleForm && (
+          <div className="mb-10">
+            <a href={config.googleForm} target="_blank" rel="noopener noreferrer" className="inline-block bg-brand-red hover:bg-[#aa0000] text-white font-display font-bold px-8 py-3 rounded-lg uppercase tracking-widest transition-all text-sm shadow-[0_4px_14px_rgba(255,0,0,0.2)]">
+              Register / Sign Up
+            </a>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard highlight icon={Activity} value={editions.length.toString()} label="Current Edition" />

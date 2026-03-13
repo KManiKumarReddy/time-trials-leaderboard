@@ -1,10 +1,14 @@
 {
   "config": {
-    "club": "Pacers Run Club",
+    "club": "LB Nagar Runners",
     "season": "Season 2",
     "distance": "5K",
-    "githubOwner": "your-github-username",
-    "githubRepo": "timetrialswebsite"
+    "githubOwner": "KManiKumarReddy",
+    "githubRepo": "time-trials-leaderboard",
+    "description": "5K Time trials (TT) followed by Coffee & Snacks",
+    "location": "Scholar's World School",
+    "googleForm": "https://forms.gle/yZbKrhkiq97zg4xt6",
+    "coverPhotoUrl": ""
   },
   "editions": [],
   "entries": []
