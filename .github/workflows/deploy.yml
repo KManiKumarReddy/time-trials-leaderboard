@@ -32,7 +32,7 @@ jobs:
         run: npm ci
       - name: Build
         env:
-          GH_PAT: ${{ secrets.GITHUB_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         run: npm run build
       - name: Setup Pages

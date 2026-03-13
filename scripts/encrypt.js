@@ -34,7 +34,7 @@ try {
     if (envContent && !envContent.endsWith('\n')) envContent += '\n';
   }
 
-  envContent += `VITE_ENCRYPTED_PAT=${encrypted}\n`;
+  envContent += `VITE_ENCRYPTED_PAT="${encrypted}"\n`;
 
   fs.writeFileSync(envFilePath, envContent);
   console.log("✅ Successfully encrypted GitHub PAT and injected it into .env.local");

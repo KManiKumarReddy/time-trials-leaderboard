@@ -105,7 +105,7 @@ export default function Admin({ data, reloadData }) {
       const bytes = CryptoJS.AES.decrypt(encryptedPat, password);
       const decryptedPat = bytes.toString(CryptoJS.enc.Utf8);
 
-      if (!decryptedPat || !decryptedPat.startsWith('ghp_') && !decryptedPat.startsWith('github_pat_')) {
+      if (!decryptedPat || decryptedPat.length < 10) {
         throw new Error('Incorrect Password. Decryption failed.');
       }
 
