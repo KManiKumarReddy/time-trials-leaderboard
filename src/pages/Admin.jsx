@@ -236,9 +236,9 @@ export default function Admin({ data, reloadData }) {
             <textarea 
               value={bulkNames} 
               onChange={e => setBulkNames(e.target.value)} 
-              placeholder="John Doe\nJane Smith\n..."
+              placeholder={"John Doe\nJane Smith\n..."}
               className="w-full bg-[#0a0a0a] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none h-24 text-sm"
-            />
+            ></textarea>
             <button onClick={handleBulkAdd} className="bg-[#222] hover:bg-[#333] text-white px-4 py-2 font-bold text-sm tracking-wide rounded-lg whitespace-nowrap h-24 border border-border-subtle hover:border-brand-red transition-all">
               Add Names
             </button>
