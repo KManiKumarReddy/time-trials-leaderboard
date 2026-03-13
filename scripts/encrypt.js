@@ -2,11 +2,15 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import CryptoJS from 'crypto-js';
+import { config as dotenvConfig } from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// This script expects GH_PAT and ADMIN_PASSWORD to be present in the environment (e.g. GitHub Actions secrets).
+// Load .env.local so credentials work in local dev too
+dotenvConfig({ path: path.join(__dirname, '..', '.env.local') });
+
+// This script expects GH_PAT and ADMIN_PASSWORD to be present in the environment.
 const pat = process.env.GH_PAT;
 const password = process.env.ADMIN_PASSWORD;
 

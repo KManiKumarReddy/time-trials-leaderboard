@@ -4,13 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/encrypt.js && vite",
     "build": "node scripts/encrypt.js && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
+    "dotenv": "^17.3.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

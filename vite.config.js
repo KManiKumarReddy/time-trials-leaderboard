@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { config as dotenvConfig } from 'dotenv'
+
+// Load .env.local BEFORE config runs (Vite normally loads it after)
+dotenvConfig({ path: '.env.local' })
 
 // https://vite.dev/config/
 export default defineConfig(() => {
