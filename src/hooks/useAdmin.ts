@@ -59,6 +59,22 @@ export function useAdmin(
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      if (isDirty) {
+        const confirmLeave = window.confirm(
+          "You have unsaved changes. Are you sure you want to leave?"
+        );
+        if (!confirmLeave) {
+          // Push back to current state to prevent navigation
+          window.history.pushState(null, "", window.location.href);
+        }
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [isDirty]);
+
   const handleUnlock = (pwd: string) => {
     setIsVerifying(true);
     setAuthError(null);

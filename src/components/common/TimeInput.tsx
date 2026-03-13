@@ -16,13 +16,19 @@ export const TimeInput: React.FC<TimeInputProps> = ({
   const secRef = useRef<HTMLInputElement>(null);
 
   const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value.replace(/\D/g, "").slice(0, 2);
+    let v = e.target.value.replace(/\D/g, "").slice(0, 2);
+    const num = parseInt(v || "0");
+    if (num > 59) v = "59";
+    if (v.length === 1 && v !== "0") v = "0" + v;
     onChange(`${v}:${ss || ""}`);
     if (v.length >= 2) secRef.current?.focus();
   };
 
   const handleSecChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value.replace(/\D/g, "").slice(0, 2);
+    let v = e.target.value.replace(/\D/g, "").slice(0, 2);
+    const num = parseInt(v || "0");
+    if (num > 59) v = "59";
+    if (v.length === 1 && v !== "0") v = "0" + v;
     onChange(`${mm || ""}:${v}`);
   };
 

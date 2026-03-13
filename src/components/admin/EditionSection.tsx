@@ -71,7 +71,7 @@ export const EditionSection: React.FC<EditionSectionProps> = ({
       </div>
 
       {isExpanded && (
-        <div className="p-4 sm:p-6 bg-[#0c0c0c] border-t border-[#333] space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="p-4 sm:p-6 bg-[#0c0c0c] border-t border-[#333] space-y-6 animate-in fade-in slide-in-from-top-2 duration-300 overflow-visible">
           <div className="grid grid-cols-2 gap-4 pb-6 border-b border-white/5">
             <div>
               <label className="block text-[0.6rem] font-bold tracking-widest uppercase text-text-muted mb-2">
