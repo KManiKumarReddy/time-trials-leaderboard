@@ -20,6 +20,7 @@ export default defineConfig(() => {
     define: {
       'import.meta.env.GITHUB_OWNER': JSON.stringify(owner),
       'import.meta.env.GITHUB_REPO': JSON.stringify(repoName),
+      'import.meta.env.GIST_ID': JSON.stringify(process.env.GIST_ID || ''),
     }
   }
 })

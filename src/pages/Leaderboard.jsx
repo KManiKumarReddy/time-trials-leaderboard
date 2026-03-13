@@ -3,13 +3,13 @@ import { Trophy, Clock, Target, CalendarDays, Activity } from 'lucide-react';
 
 function StatCard({ icon: Icon, value, label, highlight }) {
   return (
-    <div className={`p-5 rounded-2xl border border-border-subtle ${highlight ? 'bg-brand-red/10 border-brand-red/30 relative overflow-hidden' : 'bg-bg-card'}`}>
+    <div className={`p-3 sm:p-5 rounded-2xl border border-border-subtle ${highlight ? 'bg-brand-red/10 border-brand-red/30 relative overflow-hidden' : 'bg-bg-card'}`}>
       {highlight && <div className="absolute inset-0 bg-gradient-to-br from-brand-red/20 to-transparent pointer-events-none" />}
-      <div className="flex flex-col gap-2 relative">
-        <Icon className={`w-5 h-5 ${highlight ? 'text-brand-red' : 'text-brand-gold'}`} />
+      <div className="flex flex-col gap-1.5 sm:gap-2 relative">
+        <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${highlight ? 'text-brand-red' : 'text-brand-gold'}`} />
         <div>
-          <div className="font-display font-bold text-2xl tracking-wide leading-tight">{value || "—"}</div>
-          <div className="text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mt-1">{label}</div>
+          <div className="font-display font-bold text-lg sm:text-2xl tracking-wide leading-tight truncate">{value || "—"}</div>
+          <div className="text-[0.6rem] sm:text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mt-0.5 sm:mt-1">{label}</div>
         </div>
       </div>
     </div>
@@ -32,41 +32,36 @@ function RunnerCard({ rank, name, time, pb, date, pace }) {
   const isPodium = rank <= 3;
 
   return (
-    <div className={`flex items-center justify-between p-4 sm:p-5 rounded-xl border border-border-subtle bg-bg-card hover:bg-bg-card-hover transition-all group ${isPodium ? rankColors[rank] : 'hover:border-white/10'}`}>
-      <div className="flex items-center gap-4 sm:gap-6">
-        <div className={`font-display font-black text-3xl sm:text-4xl italic transition-transform group-hover:scale-110 w-12 text-center leading-none ${isPodium ? '' : 'text-text-muted/40'}`}>
+    <div className={`flex items-center justify-between p-3 sm:p-5 rounded-xl border border-border-subtle bg-bg-card hover:bg-bg-card-hover transition-all group ${isPodium ? rankColors[rank] : 'hover:border-white/10'}`}>
+      <div className="flex items-center gap-3 sm:gap-6">
+        <div className={`font-display font-black text-2xl sm:text-4xl italic transition-transform group-hover:scale-110 w-9 sm:w-12 text-center leading-none ${isPodium ? '' : 'text-text-muted/40'}`}>
           {rank.toString().padStart(2, '0')}
         </div>
         
-        {/* Placeholder avatar ring */}
+        {/* Avatar ring - hidden on mobile */}
         <div className={`hidden sm:flex w-12 h-12 rounded-full border-2 items-center justify-center bg-[#1a1a1a] ${isPodium ? ringColors[rank] : 'border-[#333]'}`}>
           <span className="font-display font-bold text-lg text-white/50">{name.charAt(0)}</span>
         </div>
 
         <div className="flex flex-col">
-          <div className="font-sans font-bold text-lg tracking-tight text-white">{name}</div>
-          <div className="text-xs text-text-muted tracking-wide mt-0.5">#{name.replace(/\s+/g, '').toUpperCase().slice(0, 6)}</div>
+          <div className="font-sans font-bold text-sm sm:text-lg tracking-tight text-white">{name}</div>
         </div>
       </div>
 
-      <div className="flex items-center gap-4 sm:gap-8 text-right">
+      <div className="flex items-center gap-2 sm:gap-8 text-right">
         <div className="flex flex-col">
-          <div className="flex items-center gap-2 justify-end">
-            <div className={`font-display font-black text-2xl sm:text-3xl tracking-wide tabular-nums leading-none ${pb ? 'text-neon-accent' : 'text-white'}`}>
+          <div className="flex items-center gap-1.5 sm:gap-2 justify-end">
+            <div className={`font-display font-black text-xl sm:text-3xl tracking-wide tabular-nums leading-none ${pb ? 'text-neon-accent' : 'text-white'}`}>
               {time}
             </div>
-            {pb && <div className="text-[0.6rem] font-bold bg-neon-accent/20 text-neon-accent px-1.5 py-0.5 rounded tracking-widest uppercase mb-1">PR</div>}
+            {pb && <div className="text-[0.5rem] sm:text-[0.6rem] font-bold bg-neon-accent/20 text-neon-accent px-1 sm:px-1.5 py-0.5 rounded tracking-widest uppercase">PR</div>}
           </div>
-          <div className="flex items-center justify-end gap-3 mt-1.5 text-[0.7rem] text-text-muted uppercase tracking-widest font-bold">
+          <div className="hidden sm:flex items-center justify-end gap-3 mt-1.5 text-[0.7rem] text-text-muted uppercase tracking-widest font-bold">
             <span>{date}</span>
             <span className="opacity-40">•</span>
             <span>{pace} <span className="lowercase">/km</span></span>
           </div>
         </div>
-        
-        <button className="hidden md:block py-2 px-4 rounded-lg bg-[#222] border border-[#333] text-xs font-bold tracking-widest uppercase hover:bg-white hover:text-black transition-colors">
-          View Details
-        </button>
       </div>
     </div>
   );
@@ -82,7 +77,7 @@ const parseTime = (timeStr) => {
   return 999999;
 };
 
-export default function Leaderboard({ data }) {
+export default function Leaderboard({ data, isLive }) {
   const [activeTab, setActiveTab] = useState('overall');
 
   // Defensive check
@@ -117,18 +112,26 @@ export default function Leaderboard({ data }) {
   return (
     <div className="pb-24">
       {/* Hero Header */}
-      <div className="py-12 md:py-16">
+      <div className="py-8 sm:py-12 md:py-16">
         {config.coverPhotoUrl && (
-          <div className="w-full h-48 md:h-72 rounded-2xl overflow-hidden mb-10 shadow-[0_0_30px_rgba(255,255,255,0.05)] border border-border-subtle">
+          <div className="w-full h-40 sm:h-48 md:h-72 rounded-2xl overflow-hidden mb-6 sm:mb-10 shadow-[0_0_30px_rgba(255,255,255,0.05)] border border-border-subtle">
             <img src={config.coverPhotoUrl} alt="Cover" className="w-full h-full object-cover" />
           </div>
         )}
 
-        <div className="flex flex-col space-y-2 mb-6">
-          <div className="text-brand-red font-bold text-xs tracking-[0.2em] uppercase font-display">
-            {config.season} • {config.distance} Series {config.location && `• ${config.location}`}
+        <div className="flex flex-col space-y-2 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2">
+            <div className="text-brand-red font-bold text-[0.65rem] sm:text-xs tracking-[0.2em] uppercase font-display">
+              {config.season} • {config.distance} {config.location && `• ${config.location}`}
+            </div>
+            {isLive && (
+              <div className="flex items-center gap-1 bg-green-900/30 border border-green-500/30 rounded-full px-2 py-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-green-400 text-[0.6rem] font-bold uppercase tracking-widest">Live</span>
+              </div>
+            )}
           </div>
-          <h1 className="font-display font-black text-5xl md:text-7xl uppercase italic tracking-tighter leading-none">
+          <h1 className="font-display font-black text-3xl sm:text-5xl md:text-7xl uppercase italic tracking-tighter leading-none">
             <span className="text-white">{config.club || 'Time Trial'} </span>
             <span className="text-transparent" style={{ WebkitTextStroke: '2px #f5f5f5' }}>Leaderboard</span>
           </h1>

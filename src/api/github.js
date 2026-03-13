@@ -1,86 +1,63 @@
-const DATA_PATH = 'public/data.json';
+const GIST_ID = import.meta.env.GIST_ID;
+const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
 
 /**
- * Fetches the current stats. First checks for local dev mode fetch,
- * otherwise sets up to use the GitHub REST API logic.
+ * Fetches data from the public Gist raw URL (no auth needed).
+ * Falls back to the local static data.json for dev mode.
  */
 export async function fetchStats() {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data.json`, { cache: 'no-store' });
+    let url;
+    if (GIST_ID && GITHUB_OWNER) {
+      // Production: fetch from public Gist raw URL (no auth, no rate limit)
+      url = `https://gist.githubusercontent.com/${GITHUB_OWNER}/${GIST_ID}/raw/data.json?t=${Date.now()}`;
+    } else {
+      // Local dev: fetch from static public/data.json
+      url = `${import.meta.env.BASE_URL}data.json`;
+    }
+
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error('Network response was not ok');
     return await res.json();
   } catch (err) {
     console.error("Could not fetch data:", err);
-    throw err; // Throw error instead of returning placeholder
+    throw err;
   }
 }
 
 /**
- * Updates the remote repository data.json using the GitHub REST API.
+ * Updates the Gist via the GitHub API using the decrypted PAT.
+ * This is instant — no rebuild triggered.
  */
 export async function updateStats(pat, newData) {
-  // Use repository injected from GitHub Actions build
-  const githubOwner = import.meta.env.GITHUB_OWNER
-  const githubRepo = import.meta.env.GITHUB_REPO
-  if (!githubOwner || !githubRepo) {
-    throw new Error('GitHub Owner and Repo must be provided by GitHub Actions environment or fallback settings.');
+  if (!GIST_ID) {
+    throw new Error('GIST_ID is not configured. Ensure it is set as a GitHub Actions variable.');
   }
 
-  const url = `https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${DATA_PATH}`;
+  const url = `https://api.github.com/gists/${GIST_ID}`;
 
-  // 1. Get the current file's SHA (required for updating)
-  let sha;
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'Authorization': `token ${pat}`
+  const payload = {
+    files: {
+      'data.json': {
+        content: JSON.stringify(newData, null, 2)
       }
-    });
-
-    if (!res.ok) {
-      if (res.status === 404) {
-        // File might not exist yet if they haven't committed the skeleton, 
-        // we can proceed without a sha.
-      } else {
-        throw new Error('Failed to fetch file SHA from GitHub');
-      }
-    } else {
-      const fileData = await res.json();
-      sha = fileData.sha;
     }
-  } catch (e) {
-    console.error('Failed fetching file sha:', e);
-    throw e;
-  }
-
-  // 2. Format new content inside a base64 encoded string
-  const fileContent = JSON.stringify(newData, null, 2);
-  // We use btoa but handle unicode characters just in case
-  const encodedContent = btoa(unescape(encodeURIComponent(fileContent)));
-
-  // 3. Make the PUT request to update the file
-  const updatePayload = {
-    message: 'Update leaderboards data',
-    content: encodedContent,
-    sha: sha // Include sha if it exists
   };
 
-  const updateRes = await fetch(url, {
-    method: 'PUT',
+  const res = await fetch(url, {
+    method: 'PATCH',
     headers: {
       'Accept': 'application/vnd.github.v3+json',
       'Authorization': `token ${pat}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(updatePayload)
+    body: JSON.stringify(payload)
   });
 
-  if (!updateRes.ok) {
-    const errObj = await updateRes.json().catch(() => ({}));
-    throw new Error(errObj.message || 'Failed to push update to GitHub');
+  if (!res.ok) {
+    const errObj = await res.json().catch(() => ({}));
+    throw new Error(errObj.message || 'Failed to update Gist');
   }
 
-  return await updateRes.json();
+  return await res.json();
 }

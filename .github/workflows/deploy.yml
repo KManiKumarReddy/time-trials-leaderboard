@@ -34,6 +34,8 @@ jobs:
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          GIST_ID: ${{ vars.GIST_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: npm run build
       - name: Setup Pages
         uses: actions/configure-pages@v4
