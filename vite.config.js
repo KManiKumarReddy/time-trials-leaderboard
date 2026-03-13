@@ -3,10 +3,23 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    tailwindcss(),
-    react()
-  ],
-  base: '/time-trials-leaderboard/',
+export default defineConfig(() => {
+  const repo = process.env.GITHUB_REPOSITORY || '';
+  const owner = repo.split('/')[0] || '';
+  const repoName = repo.split('/')[1] || '';
+  
+  // Use repository name for base path if available (for GitHub Pages), else fallback to root
+  const basePath = repoName ? `/${repoName}/` : '/';
+
+  return {
+    plugins: [
+      tailwindcss(),
+      react()
+    ],
+    base: basePath,
+    define: {
+      'import.meta.env.GITHUB_OWNER': JSON.stringify(owner),
+      'import.meta.env.GITHUB_REPO': JSON.stringify(repoName),
+    }
+  }
 })

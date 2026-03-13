@@ -169,14 +169,6 @@ export default function Admin({ data, reloadData }) {
             <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">Distance (e.g. 5K)</label>
             <input type="text" name="distance" value={config.distance || ''} onChange={handleConfigChange} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
           </div>
-          <div>
-            <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">GitHub Owner</label>
-            <input type="text" name="githubOwner" value={config.githubOwner || ''} onChange={handleConfigChange} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
-          </div>
-          <div>
-            <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">GitHub Repo</label>
-            <input type="text" name="githubRepo" value={config.githubRepo || ''} onChange={handleConfigChange} className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
-          </div>
           <div className="md:col-span-3">
             <label className="block text-[0.65rem] font-bold tracking-widest uppercase text-text-muted mb-1">Cover Photo URL (optional)</label>
             <input type="text" name="coverPhotoUrl" value={config.coverPhotoUrl || ''} onChange={handleConfigChange} placeholder="https://..." className="w-full bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white focus:border-brand-red outline-none" />
