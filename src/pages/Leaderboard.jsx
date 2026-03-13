@@ -73,6 +73,15 @@ function RunnerCard({ rank, name, time, pb, date, pace }) {
 }
 
 
+const parseTime = (timeStr) => {
+  if (!timeStr) return 999999;
+  const parts = String(timeStr).trim().split(/[:.]+/).map(Number);
+  if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) return parts[0] * 60 + parts[1];
+  if (parts.length === 3 && !isNaN(parts[0]) && !isNaN(parts[1]) && !isNaN(parts[2])) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  if (parts.length === 1 && !isNaN(parts[0])) return parts[0] * 60;
+  return 999999;
+};
+
 export default function Leaderboard({ data }) {
   const [activeTab, setActiveTab] = useState('overall');
 
@@ -87,8 +96,8 @@ export default function Leaderboard({ data }) {
     if (entry.status !== 'ok') return;
     
     // Convert time to seconds for comparison
-    const [min, sec] = entry.time.split(':').map(Number);
-    const totalSecs = min * 60 + sec;
+    const totalSecs = parseTime(entry.time);
+    if (totalSecs >= 999999) return;
     
     if (!overallPerformances[entry.name] || totalSecs < overallPerformances[entry.name].totalSecs) {
       overallPerformances[entry.name] = {
@@ -101,13 +110,6 @@ export default function Leaderboard({ data }) {
   });
 
   const overallSorted = Object.values(overallPerformances).sort((a, b) => a.totalSecs - b.totalSecs);
-  
-  const currentEditionId = editions.length > 0 ? editions[editions.length - 1].id : null;
-  const currentEditionEntries = currentEditionId ? entries.filter(e => e.editionId === currentEditionId && e.status === 'ok').sort((a, b) => {
-    const [aMin, aSec] = a.time.split(':').map(Number);
-    const [bMin, bSec] = b.time.split(':').map(Number);
-    return (aMin * 60 + aSec) - (bMin * 60 + bSec);
-  }) : [];
 
   const courseRecord = overallSorted[0]?.time || "—";
   const recordHolder = overallSorted[0]?.name || "—";
@@ -203,15 +205,13 @@ export default function Leaderboard({ data }) {
           (() => {
             const edId = activeTab.replace('ed-', '');
             const edEntries = entries.filter(e => e.editionId === edId && e.status === 'ok').sort((a, b) => {
-              const [aMin, aSec] = a.time.split(':').map(Number);
-              const [bMin, bSec] = b.time.split(':').map(Number);
-              return (aMin * 60 + aSec) - (bMin * 60 + bSec);
+              return parseTime(a.time) - parseTime(b.time);
             });
             const editionInfo = editions.find(e => e.id === edId);
 
             return edEntries.length > 0 ? (
               edEntries.map((runner, idx) => {
-                const [min, sec] = runner.time.split(':').map(Number);
+                const totalSecs = parseTime(runner.time);
                 const isOverallPB = overallPerformances[runner.name]?.time === runner.time;
 
                 return (
@@ -222,7 +222,7 @@ export default function Leaderboard({ data }) {
                     time={runner.time}
                     pb={isOverallPB}
                     date={editionInfo?.date || "—"}
-                    pace={((min * 60 + sec) / 5 / 60).toFixed(2).replace('.', ':')}
+                    pace={totalSecs < 999999 ? (totalSecs / 5 / 60).toFixed(2).replace('.', ':') : "—"}
                   />
                 );
               })

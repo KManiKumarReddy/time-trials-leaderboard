@@ -20,16 +20,11 @@ export async function fetchStats() {
  */
 export async function updateStats(pat, newData) {
   // Use repository injected from GitHub Actions build
-  const githubOwner = import.meta.env.GITHUB_OWNER || newData.config.githubOwner;
-  const githubRepo = import.meta.env.GITHUB_REPO || newData.config.githubRepo;
-
+  const githubOwner = import.meta.env.GITHUB_OWNER
+  const githubRepo = import.meta.env.GITHUB_REPO
   if (!githubOwner || !githubRepo) {
     throw new Error('GitHub Owner and Repo must be provided by GitHub Actions environment or fallback settings.');
   }
-
-  // Do not store these in data.json; they are fetched at build-time.
-  delete newData.config.githubOwner;
-  delete newData.config.githubRepo;
 
   const url = `https://api.github.com/repos/${githubOwner}/${githubRepo}/contents/${DATA_PATH}`;
 
