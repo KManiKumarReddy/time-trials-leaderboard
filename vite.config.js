@@ -22,9 +22,8 @@ export default defineConfig(() => {
     ],
     base: basePath,
     define: {
-      'import.meta.env.GITHUB_OWNER': JSON.stringify(owner),
-      'import.meta.env.GITHUB_REPO': JSON.stringify(repoName),
-      'import.meta.env.GIST_ID': JSON.stringify(process.env.GIST_ID || ''),
+      'import.meta.env.VITE_GITHUB_OWNER': JSON.stringify(owner),
+      'import.meta.env.VITE_GIST_ID': JSON.stringify(process.env.GIST_ID || ''),
     }
   }
 })

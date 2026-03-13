@@ -1,14 +1,14 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import CryptoJS from 'crypto-js';
-import { config as dotenvConfig } from 'dotenv';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import CryptoJS from "crypto-js";
+import { config as dotenvConfig } from "dotenv";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load .env.local so credentials work in local dev too
-dotenvConfig({ path: path.join(__dirname, '..', '.env.local') });
+dotenvConfig({ path: path.join(__dirname, "..", ".env.local") });
 
 // This script expects GH_PAT and ADMIN_PASSWORD to be present in the environment.
 const pat = process.env.GH_PAT;
@@ -18,7 +18,9 @@ console.log("Running Pre-Build Encryption Script...");
 
 if (!pat || !password) {
   console.log("⚠️  GH_PAT or ADMIN_PASSWORD not found in environment.");
-  console.log("⚠️  Skipping PAT encryption. (This is expected in local dev, but required for prod builds).");
+  console.log(
+    "⚠️  Skipping PAT encryption. (This is expected in local dev, but required for prod builds).",
+  );
   process.exit(0);
 }
 
@@ -27,22 +29,28 @@ try {
   const encrypted = CryptoJS.AES.encrypt(pat, password).toString();
 
   // We write this to a .env.local file so Vite will pick it up and bundle it as an env variable.
-  const envFilePath = path.join(__dirname, '..', '.env.local');
-  
+  const envFilePath = path.join(__dirname, "..", ".env.local");
+
   // Read existing .env.local if any, to append or replace
-  let envContent = '';
+  let envContent = "";
   if (fs.existsSync(envFilePath)) {
-    envContent = fs.readFileSync(envFilePath, 'utf8');
-    // Remove old PAT line if it exists
-    envContent = envContent.split('\n').filter(line => !line.startsWith('VITE_ENCRYPTED_PAT')).join('\n');
-    if (envContent && !envContent.endsWith('\n')) envContent += '\n';
+    envContent = fs.readFileSync(envFilePath, "utf8");
   }
+
+  // Remove old lines if they exist
+  const linesToKeep = ["VITE_ENCRYPTED_PAT"];
+  envContent = envContent
+    .split("\n")
+    .filter((line) => !linesToKeep.some((k) => line.startsWith(k)))
+    .join("\n");
+  if (envContent && !envContent.endsWith("\n")) envContent += "\n";
 
   envContent += `VITE_ENCRYPTED_PAT="${encrypted}"\n`;
 
   fs.writeFileSync(envFilePath, envContent);
-  console.log("✅ Successfully encrypted GitHub PAT and injected it into .env.local");
-
+  console.log(
+    "✅ Successfully encrypted GitHub PAT and injected it into .env.local",
+  );
 } catch (err) {
   console.error("❌ Failed to encrypt PAT:", err);
   process.exit(1);
